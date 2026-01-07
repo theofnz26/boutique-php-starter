@@ -8,7 +8,7 @@ $prices = [12.50, 200.00, 45.00, 800.00, 9.99, 60.00];
 
 $smallBudget = array_filter($prices, function($price) {
     
-    // --- ICI, C'EST TA RÈGLE DU JEU ---
+   
     // On garde seulement si le prix est strictement inférieur à 50
     return $price < 50;
 
