@@ -1,14 +1,13 @@
 <?php
-// J'ouvre ma balise PHP pour commencer à écrire de la logique serveur
-// ------------------------------------------------------------------
-// PARTIE 1 : LES DONNÉES (DATABASE)
-// ------------------------------------------------------------------
+
+// LES DONNÉES
+
 
 // Je déclare une variable $catalogue qui est un grand tableau ([]).
 // Ce tableau va contenir la liste de tous mes produits.
 $catalogue = [
 
-    // --- PRODUIT 0 ---
+    // PRODUIT 0 
     // J'ouvre un sous-tableau pour mon premier produit (Index 0)
     [
         "nom" => "T-Shirt Geek",
@@ -17,7 +16,7 @@ $catalogue = [
         "image" => "/var/www/boutique/assets/images/pull.png"
     ], // Je ferme le sous-tableau du produit 0 et je mets une virgule pour passer au suivant
 
-    // --- PRODUIT 1 ---
+    // PRODUIT 1
     // J'ouvre un sous-tableau pour mon deuxième produit (Index 1)
     [
         "nom" => "Tasse Café",
@@ -26,7 +25,7 @@ $catalogue = [
         "image" => "/var/www/boutique/assets/images/mug.png"
     ], // Fin du produit 1
 
-    // --- PRODUIT 2 ---
+    // PRODUIT 2
     // J'ouvre le produit à l'Index 2
     [
         "nom" => "Clavier Mécanique",
@@ -35,7 +34,7 @@ $catalogue = [
         "image" => "/var/www/boutique/assets/images/clavier.png"
     ], 
 
-    // --- PRODUIT 3 ---
+    // PRODUIT 3
     // J'ouvre le produit à l'Index 3
     [
         "nom" => "Souris Gaming",
@@ -44,7 +43,7 @@ $catalogue = [
         "image" => "/var/www/boutique/assets/images/souris gaming.png"
     ],
 
-    // --- PRODUIT 4 ---
+    // PRODUIT 4
     // J'ouvre le produit à l'Index 4
     [
         "nom" => "Écran 4K",
@@ -53,7 +52,7 @@ $catalogue = [
         "image" => "/var/www/boutique/assets/images/ecran.png"
     ],
 
-    // --- PRODUIT 5 ---
+    // PRODUIT 5
     // J'ouvre le dernier produit à l'Index 5
     [
         "nom" => "Casque Audio",
