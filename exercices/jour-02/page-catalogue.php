@@ -11,23 +11,19 @@ $catalogue = [
     // --- PRODUIT 0 ---
     // J'ouvre un sous-tableau pour mon premier produit (Index 0)
     [
-        // J'associe la clé "nom" à la valeur "T-Shirt Geek"
         "nom" => "T-Shirt Geek",
-        // J'associe la clé "prix" à la valeur numérique 19.99
         "prix" => 19.99,
-        // J'associe la clé "stock" à la quantité 50
         "stock" => 50,
-        // J'associe la clé "image" à une URL d'image (picsum est un générateur d'images aléatoires)
-        "image" => "https://picsum.photos/id/1/200/200"
+        "image" => "/var/www/boutique/assets/images/pull.png"
     ], // Je ferme le sous-tableau du produit 0 et je mets une virgule pour passer au suivant
 
     // --- PRODUIT 1 ---
     // J'ouvre un sous-tableau pour mon deuxième produit (Index 1)
     [
-        "nom" => "Tasse Café Java",
+        "nom" => "Tasse Café",
         "prix" => 9.50,
         "stock" => 120,
-        "image" => "https://picsum.photos/id/30/200/200"
+        "image" => "/var/www/boutique/assets/images/mug.png"
     ], // Fin du produit 1
 
     // --- PRODUIT 2 ---
@@ -36,7 +32,7 @@ $catalogue = [
         "nom" => "Clavier Mécanique",
         "prix" => 89.90,
         "stock" => 10,
-        "image" => "https://picsum.photos/id/48/200/200"
+        "image" => "/var/www/boutique/assets/images/clavier.png"
     ], 
 
     // --- PRODUIT 3 ---
@@ -45,7 +41,7 @@ $catalogue = [
         "nom" => "Souris Gaming",
         "prix" => 45.00,
         "stock" => 25,
-        "image" => "https://picsum.photos/id/60/200/200"
+        "image" => "/var/www/boutique/assets/images/souris gaming.png"
     ],
 
     // --- PRODUIT 4 ---
@@ -54,7 +50,7 @@ $catalogue = [
         "nom" => "Écran 4K",
         "prix" => 299.99,
         "stock" => 5,
-        "image" => "https://picsum.photos/id/20/200/200"
+        "image" => "/var/www/boutique/assets/images/ecran.png"
     ],
 
     // --- PRODUIT 5 ---
@@ -63,7 +59,7 @@ $catalogue = [
         "nom" => "Casque Audio",
         "prix" => 59.00,
         "stock" => 0, // Stock épuisé pour tester
-        "image" => "/"
+        "image" => "/var/www/boutique/assets/images/casque gaming.png"
     ]
 
 ]; // Je ferme ici le grand tableau $catalogue avec un point-virgule final
@@ -91,7 +87,7 @@ $catalogue = [
 </head>
 <body>
 
-    <h1>Bienvenue sur le Shop !</h1>
+    <h1>Bienvenue sur le dropshipping de Theo !</h1>
 
     <div class="container">
 
