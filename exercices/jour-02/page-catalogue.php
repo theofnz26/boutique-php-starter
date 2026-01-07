@@ -63,7 +63,7 @@ $catalogue = [
         "nom" => "Casque Audio",
         "prix" => 59.00,
         "stock" => 0, // Stock épuisé pour tester
-        "image" => ""
+        "image" => "/"
     ]
 
 ]; // Je ferme ici le grand tableau $catalogue avec un point-virgule final
