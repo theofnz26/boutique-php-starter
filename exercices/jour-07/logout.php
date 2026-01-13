@@ -1,0 +1,5 @@
+<?php
+session_start();
+session_destroy(); // On détruit tout
+header('Location: login.php'); // On renvoie à l'accueil
+exit;
