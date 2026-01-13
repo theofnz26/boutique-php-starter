@@ -1,4 +1,4 @@
-<?php
+<<?php
 // Fichier : app/produits-final.php
 $products = [
     ["nom" => "T-shirt Rouge",  "prix" => 15.00,  "stock" => 10, "categorie" => "Vêtement", "image" => "https://picsum.photos/id/1/300/200", "new" => true, "discount" => 20],

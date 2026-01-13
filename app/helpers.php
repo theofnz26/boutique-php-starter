@@ -38,4 +38,12 @@ function displayStock($stock) {
         return '<span style="color:green; font-weight:bold">✅ En stock</span>';
     }
 }
+// 5. DEBUG (L'outil de détective)
+// Affiche le contenu d'une variable et ARRÊTE le script immédiatement.
+function dump_and_die($variable) {
+    echo '<pre style="background: black; color: #00ff00; padding: 20px; font-weight: bold; z-index: 9999; position: relative;">';
+    var_dump($variable);
+    echo '</pre>';
+    die(); // C'est ici qu'on tue le script. Plus rien ne s'exécute après.
+}
 ?>
