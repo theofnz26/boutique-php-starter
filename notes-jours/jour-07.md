@@ -1,4 +1,4 @@
-Voici le contenu exact du fichier.
+
 
 **Pour que l'affichage soit parfait sur GitHub**, tu dois copier **le contenu du bloc ci-dessous** (le code brut) et le coller dans ton fichier `jour-07.md`.
 
