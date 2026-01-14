@@ -1,176 +1,157 @@
+# 📝 Journal de Bord : Jour 7 — Base de Données (PDO) & Sessions
 
-
-**Pour que l'affichage soit parfait sur GitHub**, tu dois copier **le contenu du bloc ci-dessous** (le code brut) et le coller dans ton fichier `jour-07.md`.
-
-J'ai corrigé la syntaxe des tableaux et des blocs de code pour que GitHub les interprète correctement.
-
-```markdown
-# Jour 7 : Base de Données (PDO) & Sessions
-
-Aujourd'hui, j'ai franchi une étape majeure : mes données ne sont plus volatiles. J'ai appris à connecter PHP à une base de données MySQL pour sauvegarder des informations (produits, utilisateurs) et à utiliser les Sessions pour garder une mémoire temporaire (panier, connexion) pendant la navigation.
+**Date :** 14 Janvier 2026
+**Sujet :** Persistance des données, MySQL, Sécurité et Panier.
 
 ---
 
-## 1. Les Sessions (Mémoire temporaire)
-
-Les sessions permettent de stocker des informations sur l'utilisateur tant qu'il navigue sur le site (ex: est-il connecté ? que contient son panier ?).
-
-* **Stockage :** Côté serveur (sécurisé).
-* **Durée :** Jusqu'à la fermeture du navigateur (ou déconnexion).
-* **Règle d'or :** Toujours écrire `session_start();` tout en haut du fichier, avant le moindre code HTML.
-
-```php
-session_start();
-$_SESSION['user'] = "Alex"; // Stockage
-echo $_SESSION['user'];     // Lecture
-
-```
+## 🚀 Résumé de la journée
+Aujourd'hui, mes données sont devenues immortelles (ou presque). J'ai arrêté de perdre tout mon travail à chaque actualisation de page.
+J'ai connecté PHP à une vraie base de données (**MySQL**) pour stocker les infos durablement, et j'ai utilisé les **Sessions** pour garder une mémoire temporaire (comme le panier) pendant la navigation.
 
 ---
 
-## 2. La Connexion PDO (Le pont vers MySQL)
-
-Pour que PHP parle à MySQL, on utilise l'extension **PDO** (PHP Data Objects). C'est un "adaptateur universel".
-
-### Le bloc Try / Catch
-
-Se connecter est une opération risquée (serveur éteint, mauvais mot de passe). Si ça plante, je dois "attraper" l'erreur pour ne pas afficher mes identifiants aux visiteurs.
+## 1. Les Sessions : La mémoire courte
+J'ai appris que le protocole HTTP est "sans mémoire". Pour se souvenir de l'utilisateur d'une page à l'autre, j'utilise les Sessions.
+* **Le principe :** Stocker des infos côté serveur tant que le navigateur est ouvert.
+* **La Règle d'Or :** `session_start()` doit être la **toute première ligne** du fichier.
 
 ```php
+<?php
+session_start(); // Toujours ligne 1 !
+
+// Stocker une info
+$_SESSION['user'] = "Alex";
+$_SESSION['panier'] = [12, 4, 8]; // Je peux stocker des tableaux
+
+// Lire une info
+echo "Bonjour " . $_SESSION['user'];
+
+2. PDO : Le pont vers la Base de Données
+
+Pour que PHP parle à MySQL, j'utilise l'extension PDO. C'est un adaptateur universel et sécurisé.
+Le Filet de Sécurité (Try / Catch)
+
+Se connecter est risqué. J'enveloppe ma connexion pour attraper les erreurs (catch) et éviter d'afficher mes mots de passe sur une page d'erreur publique.
+PHP
+
 try {
-    // Tentative de connexion
-    $pdo = new PDO(
-        "mysql:host=localhost;dbname=boutique;charset=utf8mb4",
-        "dev",
-        "dev",
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
+    // DSN : Où est la base ? (Host, Nom, Encodage)
+    $dsn = "mysql:host=localhost;dbname=boutique;charset=utf8mb4";
+    
+    // Création de la ligne téléphonique
+    $pdo = new PDO($dsn, "dev", "dev", [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION // Active les erreurs visibles
+    ]);
 } catch (PDOException $e) {
-    // Si échec, on gère l'erreur proprement
-    die("Erreur : " . $e->getMessage());
+    die("Erreur de connexion : " . $e->getMessage());
 }
 
-```
+3. Lire les données (SELECT)
 
----
+J'ai deux méthodes pour récupérer mes produits :
 
-## 3. Récupérer des données (SELECT)
+    query() : Pour les requêtes simples (sans variables).
 
-J'ai deux façons d'envoyer des ordres SQL :
+    fetchAll() : Pour tout récupérer d'un coup.
 
-1. **`query()`** : Pour les requêtes **fixes** (sans variables externes).
-* *Exemple :* "Donne-moi tous les produits".
+PHP
 
+// 1. J'envoie l'ordre
+$stmt = $pdo->query("SELECT * FROM products");
 
-2. **`prepare()`** : Pour les requêtes **dynamiques** (avec des variables utilisateur).
-* *Exemple :* "Donne-moi le produit dont l'ID est X".
-* ⚠️ **Obligatoire pour la sécurité** (voir point 4).
+// 2. Je récupère TOUT dans un tableau associatif
+$produits = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-
-
-### Fetch vs FetchAll
-
-Une fois la requête envoyée, il faut récupérer les "colis" (les données).
-
-* **`fetch()`** : Récupère **une seule ligne** (la suivante). Utile pour un profil utilisateur ou un détail produit.
-* **`fetchAll()`** : Récupère **toutes les lignes** restantes dans un grand tableau. Utile pour les listes de produits.
-* **`PDO::FETCH_ASSOC`** : Option cruciale pour avoir un tableau propre avec les noms des colonnes (ex: `$p['name']`) au lieu de numéros illisibles (ex: `$p[0]`).
-
----
-
-## 4. Sécurité : Les Requêtes Préparées
-
-Si je mets directement une variable utilisateur dans du SQL (ex: `WHERE nom = '$nom'`), je crée une faille **Injection SQL**. Un pirate peut détruire ma base de données.
-
-**La solution :** Je sépare le code SQL de la donnée.
-
-1. **Préparer (`prepare`)** : J'envoie le modèle de requête avec un trou (`?`).
-2. **Exécuter (`execute`)** : J'envoie la valeur séparément pour combler le trou.
-
----
-
-## 5. Tableau des nouvelles fonctions
-
-| Fonction / Syntaxe | À quoi ça sert ? | Exemple |
-| --- | --- | --- |
-| `session_start()` | Démarre ou reprend une session. **Obligatoire** en ligne 1. | `session_start();` |
-| `$_SESSION['cle']` | Tableau superglobal pour stocker/lire des infos de session. | `$_SESSION['role'] = 'admin';` |
-| `new PDO(...)` | Crée la connexion à la base de données. | `$pdo = new PDO(...);` |
-| `$pdo->query("SQL")` | Exécute une requête SQL simple (sans paramètres). | `$stmt = $pdo->query("SELECT * ...");` |
-| `$pdo->prepare("SQL")` | Prépare une requête sécurisée avec des placeholders (`?`). | `$stmt = $pdo->prepare("... ID = ?");` |
-| `$stmt->execute([...])` | Exécute la requête préparée en injectant les vraies valeurs. | `$stmt->execute([$id]);` |
-| `$stmt->fetch()` | Récupère la ligne suivante du résultat. | `$user = $stmt->fetch();` |
-| `$stmt->fetchAll()` | Récupère TOUS les résultats dans un tableau. | `$liste = $stmt->fetchAll();` |
-| `htmlspecialchars($var)` | Convertit les caractères spéciaux en HTML (Sécurité XSS). | `echo htmlspecialchars($nom);` |
-| `header("Location: ...")` | Redirige l'utilisateur vers une autre page. | `header("Location: index.php"); exit;` |
-
----
-
-## 6. Analyse des codes clés du jour
-
-### A. La connexion (Le Socle)
-
-```php
-$pdo = new PDO(
-    "mysql:host=localhost;dbname=boutique;charset=utf8mb4", // Où ? (DSN)
-    "dev", // Qui ? (User)
-    "dev", // Mot de passe ?
-    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION] // Options : Active les erreurs visibles
-);
-
-```
-
-* **Utilité :** Ouvre la ligne téléphonique avec MySQL.
-* **Détail :** `utf8mb4` est important pour gérer les accents et émojis. L'option `ERRMODE_EXCEPTION` permet de voir les erreurs SQL s'afficher (sinon c'est page blanche en cas de bug).
-
-### B. Affichage d'une liste (Le READ)
-
-```php
-// 1. On envoie l'ordre
-$stmt = $pdo->query("SELECT * FROM products"); 
-// 2. On récupère tout sous forme de tableau associatif
-$produits = $stmt->fetchAll(PDO::FETCH_ASSOC); 
-
-// 3. On boucle pour afficher
-foreach ($produits as $p) { 
-    echo htmlspecialchars($p['name']); // Sécurité XSS à l'affichage
+// 3. J'affiche
+foreach ($produits as $p) {
+    echo $p['name'] . " - " . $p['price'] . "€<br>";
 }
 
-```
+4. La Sécurité : Requêtes Préparées
 
-* **Utilité :** Afficher un catalogue complet.
-* **Détail :** On utilise `query` car il n'y a pas de filtre utilisateur. `fetchAll` nous donne un tableau qu'on peut parcourir avec `foreach`.
+C'est le point crucial. Je ne dois JAMAIS concaténer une variable utilisateur directement dans le SQL (Risque d'Injection SQL).
 
-### C. Recherche sécurisée (Le WHERE avec paramètre)
+    Mauvais : query("SELECT * FROM users WHERE id = $id") ❌
 
-```php
-// 1. Le '?' attend une valeur (Sécurité)
-$stmt = $pdo->prepare("SELECT * FROM products WHERE name LIKE ?"); 
-// 2. On envoie la valeur (avec les jokers %)
-$stmt->execute(['%' . $_GET['search'] . '%']); 
-$resultats = $stmt->fetchAll();
+    Bon : Utiliser prepare et execute ✅
 
-```
+PHP
 
-* **Utilité :** Chercher un produit sans risquer de se faire pirater (Injection SQL).
-* **Détail :** Le `?` remplace la variable. MySQL traite le contenu de `execute` comme du pur texte, jamais comme du code.
+$id = $_GET['id'];
 
-### D. Suppression et Redirection (Le DELETE)
+// 1. Préparer : Je mets un '?' à la place de la donnée
+$stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
 
-```php
+// 2. Exécuter : J'envoie la vraie donnée séparément
+$stmt->execute([$id]);
+
+// 3. Récupérer le résultat unique
+$produit = $stmt->fetch(PDO::FETCH_ASSOC);
+
+⚡ Aide-Mémoire Syntaxique
+Syntaxe	Exemple	À quoi ça sert ?
+Session Start	session_start();	Démarre la mémoire. Ligne 1 obligatoire.
+Variable Session	$_SESSION['role'] = 'admin';	Stocke une info accessible sur toutes les pages.
+Connexion PDO	$pdo = new PDO(...);	Crée l'objet qui permet de parler à MySQL.
+Query	$pdo->query("SELECT...");	Envoie une requête SQL fixe (sans variables).
+Prepare	$pdo->prepare("... id = ?");	Prépare une requête sécurisée avec un "trou" (?).
+Execute	$stmt->execute([$id]);	Envoie la donnée pour boucher le "trou".
+FetchAll	$tab = $stmt->fetchAll();	Récupère tous les résultats dans un tableau PHP.
+Redirection	header("Location: index.php");	Renvoie l'utilisateur vers une autre page.
+1. Le Concept du CRUD (Admin)
+
+Pour mon interface d'administration, j'ai tout regroupé. Voici comment j'ai géré l'ajout (Create) et la suppression (Delete).
+
+Pour supprimer (GET) :
+PHP
+
 if (isset($_GET['delete'])) {
+    // Toujours préparé car l'ID vient de l'URL !
     $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
     $stmt->execute([$_GET['delete']]);
     
-    header("Location: admin.php"); // Hop, on recharge la page proprement
-    exit; // On arrête tout le script immédiatement après
+    // Redirection pour nettoyer l'URL
+    header("Location: admin.php");
+    exit;
 }
 
-```
+Pour ajouter (POST) :
+PHP
 
-* **Utilité :** Supprimer un élément quand on clique sur un lien (ex: `admin.php?delete=12`).
-* **Détail :** La redirection est essentielle pour "nettoyer" l'URL. Sinon, si l'utilisateur rafraîchit la page, le script essaierait de supprimer à nouveau un produit qui n'existe plus.
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $stmt = $pdo->prepare("INSERT INTO products (name, price) VALUES (?, ?)");
+    $stmt->execute([ $_POST['name'], $_POST['price'] ]);
+}
 
-```
+2. La Logique du Panier (Hybride)
 
-```
+J'ai compris que le panier est un mélange de deux cerveaux :
+
+    La Session : Elle ne retient que l'ID et la quantité.
+    PHP
+
+    $_SESSION['cart'] = [
+        12 => 2, // ID 12, Qté 2
+        4  => 1  // ID 4, Qté 1
+    ];
+
+    La BDD : Au moment d'afficher, je demande les détails (prix, nom) de ces IDs là via une requête WHERE id IN (...).
+
+3. La Redirection "Nettoyage"
+
+Après avoir soumis un formulaire ou cliqué sur un lien de suppression, j'utilise :
+PHP
+
+header("Location: ma-page.php");
+exit;
+
+    Pourquoi ? Si je ne le fais pas et que l'utilisateur fait "F5" (Actualiser), le navigateur va renvoyer le formulaire ou tenter de supprimer à nouveau le produit.
+
+    Le exit : Indispensable pour que le script s'arrête net et ne charge pas le reste de la page pour rien.
+
+🧠 Bilan Personnel
+
+    Difficulté : Les erreurs SQL (Access denied) et comprendre la différence entre query (fixe) et prepare (variable).
+
+    Victoire : Avoir créé un moteur de recherche qui ne plante pas si je mets des guillemets, et voir mon panier "survivre" quand je change de page.
