@@ -41,24 +41,24 @@ class Product {
 // --- 3. TESTS (Pour vérifier que ça marche) ---
 
 // Création d'un T-shirt à 20€ avec 10 en stock
-$tshirt = new Product(1, "T-shirt Noir", "100% Coton", 20.0, 10, "Vêtements");
+// $tshirt = new Product(1, "T-shirt Noir", "100% Coton", 20.0, 10, "Vêtements");
 
-echo "<h2>Produit : $tshirt->name</h2>";
+// echo "<h2>Produit : $tshirt->name</h2>";
 
-// Test Prix TTC
-echo "Prix HT : $tshirt->price €<br>";
-echo "Prix TTC (TVA 20%) : " . $tshirt->getPriceIncludingTax() . " €<br>";
+// // Test Prix TTC
+// echo "Prix HT : $tshirt->price €<br>";
+// echo "Prix TTC (TVA 20%) : " . $tshirt->getPriceIncludingTax() . " €<br>";
 
-// Test Stock
-echo "En stock ? " . ($tshirt->isInStock() ? "OUI ✅" : "NON ❌") . "<br>";
+// // Test Stock
+// echo "En stock ? " . ($tshirt->isInStock() ? "OUI ✅" : "NON ❌") . "<br>";
 
-// Test Vente
-echo "<hr>📉 Un client achète 3 T-shirts...<br>";
-$tshirt->reduceStock(3);
-echo "Nouveau stock : $tshirt->stock <br>"; // Devrait afficher 7
+// // Test Vente
+// echo "<hr>📉 Un client achète 3 T-shirts...<br>";
+// $tshirt->reduceStock(3);
+// echo "Nouveau stock : $tshirt->stock <br>"; // Devrait afficher 7
 
-// Test Promo
-echo "<hr>🏷️ C'est les soldes ! -50% !<br>";
-$tshirt->applyDiscount(50);
-echo "Nouveau prix HT : $tshirt->price €<br>"; // Devrait afficher 10
-echo "Nouveau prix TTC : " . $tshirt->getPriceIncludingTax() . " €<br>";
+// // Test Promo
+// echo "<hr>🏷️ C'est les soldes ! -50% !<br>";
+// $tshirt->applyDiscount(50);
+// echo "Nouveau prix HT : $tshirt->price €<br>"; // Devrait afficher 10
+// echo "Nouveau prix TTC : " . $tshirt->getPriceIncludingTax() . " €<br>";

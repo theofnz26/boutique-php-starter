@@ -1,13 +1,19 @@
 <?php
+// Force l'affichage des erreurs pour le développement
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+
 
 class BankAccount
 {
-    // --- 1. PROPRIÉTÉ PRIVÉE ---
+    //1. PROPRIÉTÉ PRIVÉE
     // 'private' signifie : Accessible UNIQUEMENT depuis l'intérieur de cette classe.
     // Impossible de faire $account->balance depuis l'extérieur.
     private float $balance;
 
-    // --- 2. CONSTRUCTEUR ---
+    //2. CONSTRUCTEUR
     public function __construct(float $initialBalance = 0)
     {
         // On protège dès la création : pas de solde négatif au départ
@@ -18,7 +24,7 @@ class BankAccount
         }
     }
 
-    // --- 3. MÉTHODES (Les guichetiers) ---
+    //3. MÉTHODES
 
     // Getter : Permet de VOIR le solde, mais pas de le toucher
     public function getBalance(): float
@@ -57,7 +63,7 @@ class BankAccount
     }
 }
 
-// --- TESTS ---
+//TESTS
 
 $account = new BankAccount(100); // On ouvre un compte avec 100€
 
@@ -77,6 +83,9 @@ $account->withdraw(500); // Doit échouer
 
 echo "<hr>Solde final : " . $account->getBalance() . " €";
 
-// Test interdit (Décommente pour voir l'erreur fatale) :
-// $account->balance = 1000000; 
-// -> Fatal error: Uncaught Error: Cannot access private property
+
+
+// La ligne interdite 
+$account->balance = 1000000; 
+
+echo "<h1 style='color:red; font-size:50px;'>SI TU VOIS CE TEXTE, ALORS TU AS RAISON !</h1>";
