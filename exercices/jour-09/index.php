@@ -2,6 +2,7 @@
 
 require_once 'Category.php';
 require_once 'Product.php';
+require_once 'CartItem.php';
 
 // 3 catégories
 $catInformatique = new Category(1, "Informatique");
