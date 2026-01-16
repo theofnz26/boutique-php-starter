@@ -12,5 +12,5 @@ $products = [
     7 => ["name" => "Ceinture",       "price" => 20.00,  "stock" => 8,  "category" => "Accessoire", "image" => "https://picsum.photos/id/7/300/300", "new" => true, "discount" => 30, "desc" => "Cuir véritable."],
     8 => ["name" => "Baskets",        "price" => 80.00,  "stock" => 12, "category" => "Chaussures", "image" => "https://picsum.photos/id/8/300/300", "new" => false, "discount" => 0,  "desc" => "Pour courir vite."],
     9 => ["name" => "Lacets",         "price" => 3.50,   "stock" => 100,"categorie" => "Chaussures", "image" => "https://picsum.photos/id/9/300/300", "new" => false, "discount" => 0,  "desc" => "Ne trébuchez plus."],
-    10 => ["name" => "Bonnet",        "price" => 18.00,  "stock" => 0,  "category" => "Vêtement",   "image" => "https://picsum.photos/id/10/300/300", "new" => false, "discount" => 30, "desc" => "Pour l'hiver."],
+    10 => ["name" => "Bonnet",        "price" => 18.00,  "stock" => 2,  "category" => "Vêtement",   "image" => "https://picsum.photos/id/10/300/300", "new" => false, "discount" => 30, "desc" => "Pour l'hiver."],
 ];

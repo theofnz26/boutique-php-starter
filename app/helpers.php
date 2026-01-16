@@ -7,7 +7,7 @@ function calculateTTC($priceHT, $tva = 20) {
 }
 
 // 2. FORMATAGE (12.5 => 12,50 €)
-function formatPrice($price) {
+function formatPrice(int | float $price): mixed {
     return number_format($price, 2, ",", " ") . " €";
 }
 
