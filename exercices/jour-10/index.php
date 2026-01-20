@@ -1,107 +1,81 @@
 <?php
-
 require_once 'ProductRepository.php';
-// On charge Product.php pour être sûr que PHP connaît la classe
 require_once 'Product.php';
 
-// 1. Configuration de la connexion
-$host = "localhost";
-$dbname = "boutique";
-$user = "dev";
-$pass = "dev";
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    echo "✅ Connexion réussie à la BDD (User: $user).<br><hr>";
-} catch (PDOException $e) {
-    die("❌ Erreur de connexion : " . $e->getMessage());
-}
-
-// 2. Initialisation du Repository
+// 1. Connexion BDD
+$pdo = new PDO("mysql:host=localhost;dbname=boutique;charset=utf8", "dev", "dev");
 $repo = new ProductRepository($pdo);
 
-// ==========================================
-// 🔄 TEST DU CRUD (Cycle de vie)
-// ==========================================
-echo "<h2>🔄 Test du Cycle de Vie (CRUD Objet)</h2>";
+// 2. On récupère la liste complète
+$produits = $repo->findAll();
+?>
 
-// 1. CREATE : On crée un produit temporaire
-echo "Step 1 : Création... ";
-// ⚠️ ATTENTION : On met '1' pour l'ID catégorie (Vêtements), et non plus le texte
-$repo->create("Produit Fantôme", "Va disparaitre", 10.0, 5, 1);
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Administration Boutique</title>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #333; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .btn { text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: bold; display: inline-block; }
+        .btn-add { background-color: #28a745; color: white; margin-bottom: 20px; padding: 10px 20px; font-size: 16px; }
+        .btn-edit { background-color: #ffc107; color: black; border: 1px solid #e0a800; }
+        .btn-delete { background-color: #dc3545; color: white; border: 1px solid #c82333; margin-left: 5px; }
+        .stock-ok { color: green; font-weight: bold; }
+        .stock-low { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
 
-// On récupère l'ID généré
-$lastId = $pdo->lastInsertId();
-echo "<strong>ID généré : $lastId</strong><br>";
+    <h1>📦 Gestion du Stock</h1>
 
-// 2. READ : On vérifie qu'il est là
-$p = $repo->find($lastId);
+    <a href="exo2_create.php" class="btn btn-add">➕ Ajouter un nouveau produit</a>
 
-if ($p) {
-    // 👇 ICI LE CHANGEMENT MAJEUR : On utilise les méthodes de l'objet (->)
-    echo "Step 2 : Vérification -> Nom actuel : " . $p->getName() . " (" . $p->getPrice() . "€)<br>";
-}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom & Description</th>
+                <th>Prix</th>
+                <th>Stock</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($produits as $p): ?>
+                <tr>
+                    <td><?= $p->getId() ?></td>
+                    <td>
+                        <strong><?= htmlspecialchars($p->getName()) ?></strong><br>
+                        <small style="color:gray"><?= htmlspecialchars($p->getDescription()) ?></small>
+                    </td>
+                    <td><?= $p->getPrice() ?> €</td>
+                    
+                    <td>
+                        <?php if ($p->getStock() < 5): ?>
+                            <span class="stock-low">⚠️ <?= $p->getStock() ?></span>
+                        <?php else: ?>
+                            <span class="stock-ok"><?= $p->getStock() ?></span>
+                        <?php endif; ?>
+                    </td>
 
-// 3. UPDATE : On le modifie
-echo "Step 3 : Modification... ";
-$repo->update($lastId, "Fantôme MODIFIÉ", 999.99);
+                    <td>
+                        <a href="edit.php?id=<?= $p->getId() ?>" class="btn btn-edit">✏️ Modifier</a>
+                        <a href="delete.php?id=<?= $p->getId() ?>" 
+                           class="btn btn-delete"
+                           onclick="return confirm('Es-tu sûr de vouloir supprimer ce produit ?');">
+                           🗑️
+                        </a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
 
-// On revérifie
-$p = $repo->find($lastId);
-if ($p) {
-    echo "-> Nouveau nom : " . $p->getName() . " (" . $p->getPrice() . "€)<br>";
-}
-
-// 4. DELETE : On le supprime
-echo "Step 4 : Suppression... ";
-$repo->delete($lastId);
-
-// 5. READ FINAL : On vérifie qu'il n'est plus là
-$check = $repo->find($lastId);
-if ($check === false) {
-    echo "✅ Preuve : Le produit n'existe plus !";
-} else {
-    echo "❌ Aïe, il est encore là.";
-}
-
-echo "<hr>";
-
-// ==========================================
-// 🕵️ TESTS DES RECHERCHES AVANCÉES (EXO 3)
-// ==========================================
-echo "<h2>🕵️ Tests des Recherches (Mode Objet)</h2>";
-
-// TEST 1 : Par catégorie (ID 1 = Vêtements)
-echo "<h3>👕 Produits de la catégorie 1 (Vêtements)</h3>";
-$vetements = $repo->findByCategory(1);
-
-if (empty($vetements)) {
-    echo "Aucun vêtement trouvé.<br>";
-} else {
-    foreach ($vetements as $product) {
-        // On utilise les Getters de l'objet Product
-        echo "📦 " . $product->getName() . " (" . $product->getPrice() . " €)<br>";
-    }
-}
-
-// TEST 2 : Produits en stock
-echo "<h3>✅ Produits en stock (> 0)</h3>";
-$stock = $repo->findInStock();
-foreach ($stock as $product) {
-    echo "- " . $product->getName() . " (Stock: " . $product->getStock() . ")<br>";
-}
-
-// TEST 3 : Recherche texte
-echo "<h3>🔍 Recherche du mot 'Sport'</h3>";
-$results = $repo->search("Sport");
-
-if (empty($results)) {
-    echo "Aucun résultat pour 'Sport'.<br>";
-} else {
-    foreach ($results as $product) {
-        echo "🔎 Trouvé : " . $product->getName() . " (" . $product->getDescription() . ")<br>";
-    }
-}
-
-echo "<br><br><br>"; // Juste pour faire de la place en bas de page
+</body>
+</html>

@@ -14,61 +14,42 @@ class ProductRepository
 
     /**
      * 🪄 HYDRATATION
-     * Cette méthode privée transforme un tableau SQL (array) en un Objet Product.
-     * C'est elle qui fait la magie pour que tu puisses faire $produit->getName()
+     * Transforme un tableau SQL en Objet Product
      */
     private function hydrate(array $data): Product
     {
         return new Product(
             id:          (int)$data['id'],
             name:        $data['name'],
-            description: $data['description'] ?? null, // ?? null gère le cas où c'est vide
+            description: $data['description'] ?? null,
             price:       (float)$data['price'],
             stock:       (int)$data['stock'],
             categoryId:  isset($data['category_id']) ? (int)$data['category_id'] : null
         );
     }
 
-    /**
-     * READ: Récupérer un produit précis par son ID
-     * Retourne un Objet Product (ou false si pas trouvé)
-     */
+    // --- LECTURE (READ) ---
+
     public function find(int $id): Product|false
     {
         $stmt = $this->pdo->prepare("SELECT * FROM products WHERE id = :id");
         $stmt->execute(['id' => $id]);
-        
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // Si pas de résultat, on retourne false
-        if (!$data) {
-            return false;
-        }
-
-        // Sinon, on transforme le tableau en Objet
-        return $this->hydrate($data);
+        
+        // Si data est faux (pas trouvé), on renvoie false, sinon on hydrate
+        return $data ? $this->hydrate($data) : false;
     }
 
-    /**
-     * READ: Récupérer TOUTE la liste
-     * Retourne un tableau d'Objets Product
-     */
     public function findAll(): array
     {
         $stmt = $this->pdo->query("SELECT * FROM products");
-        $lines = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // array_map applique la méthode 'hydrate' sur chaque ligne trouvée
-        return array_map([$this, 'hydrate'], $lines);
+        return array_map([$this, 'hydrate'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
-
-    // --- NOUVELLES MÉTHODES DE RECHERCHE (EXERCICE 3) ---
 
     public function findByCategory(int $categoryId): array
     {
         $stmt = $this->pdo->prepare("SELECT * FROM products WHERE category_id = :id");
         $stmt->execute(['id' => $categoryId]);
-        
         return array_map([$this, 'hydrate'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
@@ -82,16 +63,11 @@ class ProductRepository
     {
         $stmt = $this->pdo->prepare("SELECT * FROM products WHERE name LIKE :term OR description LIKE :term");
         $stmt->execute(['term' => "%$term%"]);
-        
         return array_map([$this, 'hydrate'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
-    // --- MÉTHODES D'ÉCRITURE (C.U.D) ---
+    // --- ÉCRITURE (CREATE, UPDATE, DELETE) ---
 
-    /**
-     * CREATE: Ajouter un nouveau produit
-     * ⚠️ J'ai changé $category (string) en $categoryId (int) pour coller à ta nouvelle BDD !
-     */
     public function create(string $name, string $description, float $price, int $stock, int $categoryId): void
     {
         $sql = "INSERT INTO products (name, description, price, stock, category_id) 
@@ -104,24 +80,44 @@ class ProductRepository
             'description' => $description,
             'price'       => $price,
             'stock'       => $stock,
-            'cat_id'      => $categoryId // On insère l'ID maintenant
+            'cat_id'      => $categoryId
         ]);
         
         echo "✅ Produit ajouté avec succès !<br>";
     }
 
-    public function update(int $id, string $name, float $price): void
+    /**
+     * UPDATE : La version COMPLÈTE pour edit.php
+     * Elle met à jour le nom, la description, le prix, le stock et la catégorie.
+     */
+    public function update(int $id, string $name, string $description, float $price, int $stock, int $categoryId): void
     {
-        $sql = "UPDATE products SET name = :name, price = :price WHERE id = :id";
+        $sql = "UPDATE products 
+                SET name = :name, 
+                    description = :desc, 
+                    price = :price, 
+                    stock = :stock, 
+                    category_id = :cat_id 
+                WHERE id = :id";
+        
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['id' => $id, 'name' => $name, 'price' => $price]);
-        echo "✅ Produit $id modifié avec succès !<br>";
+        
+        $stmt->execute([
+            'id'     => $id,
+            'name'   => $name,
+            'desc'   => $description,
+            'price'  => $price,
+            'stock'  => $stock,
+            'cat_id' => $categoryId
+        ]);
+        
+        // On ne met pas d'echo ici, car edit.php gère son propre message de succès.
     }
 
     public function delete(int $id): void
     {
         $stmt = $this->pdo->prepare("DELETE FROM products WHERE id = :id");
         $stmt->execute(['id' => $id]);
-        echo "🗑️ Produit $id supprimé de la base.<br>";
+        // L'echo ici n'est pas grave, mais delete.php fait une redirection rapide donc on ne le verra pas.
     }
 }
