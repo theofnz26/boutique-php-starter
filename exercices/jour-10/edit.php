@@ -3,42 +3,41 @@
 require_once 'ProductRepository.php';
 require_once 'Product.php';
 
-// 2. Connexion à la base de données
+// 2. Connexion
 $pdo = new PDO("mysql:host=localhost;dbname=boutique;charset=utf8", "dev", "dev");
 $repo = new ProductRepository($pdo);
 
-// 3. VÉRIFICATION DE SÉCURITÉ
-// On regarde si l'ID est bien présent dans l'URL (ex: edit.php?id=42)
+// 3. Récupération de l'objet à modifier
 if (!isset($_GET['id'])) {
-    die("❌ Erreur : Aucun produit sélectionné (Il manque l'ID dans l'URL).");
+    die("❌ Erreur : ID manquant.");
 }
 
 $id = (int)$_GET['id'];
 $produit = $repo->find($id);
 
-// Si l'ID ne correspond à rien en base de données
 if (!$produit) {
-    die("❌ Erreur : Ce produit n'existe pas.");
+    die("❌ Erreur : Produit introuvable.");
 }
 
 $message = "";
 
-// 4. TRAITEMENT DU FORMULAIRE (Quand on clique sur "Enregistrer")
+// 4. TRAITEMENT (Mode Strict : On modifie l'objet, puis on le sauvegarde)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nom   = $_POST['name'];
-    $desc  = $_POST['description'];
-    $prix  = (float)$_POST['price'];
-    $stock = (int)$_POST['stock'];
-    $catId = (int)$_POST['category_id'];
+    
+    // A. On utilise les SETTERS pour changer les valeurs de l'objet
+    $produit->setName($_POST['name']);
+    $produit->setDescription($_POST['description']);
+    $produit->setPrice((float)$_POST['price']);
+    $produit->setStock((int)$_POST['stock']);
+    $produit->setCategoryId((int)$_POST['category_id']);
 
-    // On appelle la méthode UPDATE du Repository
-    $repo->update($id, $nom, $desc, $prix, $stock, $catId);
+    // B. On envoie l'OBJET complet au Repository
+    $repo->update($produit);
 
-    // ⚡ IMPORTANT : On recharge les données du produit depuis la BDD
-    // pour être sûr d'afficher les nouvelles valeurs dans le formulaire juste en dessous
+    // C. On recharge le produit pour être sûr d'afficher les données à jour
     $produit = $repo->find($id);
     
-    $message = "<div class='success'>✅ Modifications enregistrées avec succès ! <a href='index.php'>Retour à la liste</a></div>";
+    $message = "<div class='success'>✅ Produit modifié via l'Objet ! <a href='index.php'>Retour liste</a></div>";
 }
 ?>
 
@@ -46,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Modifier : <?= htmlspecialchars($produit->getName()) ?></title>
+    <title>Modifier le produit</title>
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #f9f9f9; }
         .form-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -62,16 +61,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
-    <a href="index.php" class="back-link">⬅️ Annuler et retour à la liste</a>
+    <a href="index.php" class="back-link">⬅️ Annuler</a>
 
     <div class="form-container">
-        <h1>✏️ Modifier le produit</h1>
+        <h1>✏️ Modifier (Mode Objet)</h1>
         
         <?= $message ?>
 
         <form method="POST">
-            
-            <label>Nom du produit :</label>
+            <label>Nom :</label>
             <input type="text" name="name" value="<?= htmlspecialchars($produit->getName()) ?>" required>
 
             <label>Description :</label>

@@ -1,37 +1,44 @@
 <?php
-
+// On charge les fichiers nécessaires
 require_once 'ProductRepository.php';
-// Product.php est chargé automatiquement par le Repository, mais on peut le mettre par sécurité
-require_once 'Product.php'; 
+require_once 'Product.php';
 
-// Connexion à la BDD
+// Connexion à la base de données
 $pdo = new PDO("mysql:host=localhost;dbname=boutique;charset=utf8", "dev", "dev");
 $repo = new ProductRepository($pdo);
 
-// Variable pour afficher un message à l'utilisateur
 $message = "";
 
-
-// 2. TRAITEMENT DU FORMULAIRE (PHP)
-// On vérifie : Est-ce que l'utilisateur a cliqué sur le bouton "Envoyer" ?
+// TRAITEMENT DU FORMULAIRE
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
-    // A. On récupère les données saisies (c'est le nom des <input>)
-    // On sécurise un minimum et on force les types (int, float)
+    // 1. Récupération des valeurs brutes
     $nom         = $_POST['name'];
     $description = $_POST['description'];
-    $prix        = (float) $_POST['price']; // On force en nombre à virgule
-    $stock       = (int) $_POST['stock'];   // On force en entier
-    $categorieId = (int) $_POST['category_id']; 
+    $prix        = (float) $_POST['price'];
+    $stock       = (int) $_POST['stock'];
+    $categorieId = (int) $_POST['category_id'];
 
-    // B. On vérifie que les champs obligatoires sont là
+    // 2. Validation simple
     if (!empty($nom) && $prix > 0) {
-        // C. On appelle ton Repository pour insérer en base
-        $repo->create($nom, $description, $prix, $stock, $categorieId);
         
-        $message = "<div class='success'>✅ Le produit <strong>$nom</strong> a été ajouté !</div>";
+        // ⚡ STRICT MODE : On crée d'abord l'Objet (Entité)
+        // L'ID est null car c'est une création
+        $nouveauProduit = new Product(
+            null, 
+            $nom, 
+            $description, 
+            $prix, 
+            $stock, 
+            $categorieId
+        );
+
+        // 3. On passe l'objet au Repository pour qu'il le sauvegarde
+        $repo->save($nouveauProduit);
+        
+        $message = "<div class='success'>✅ Produit ajouté via l'Objet Product !</div>";
     } else {
-        $message = "<div class='error'>❌ Attention : Le nom et le prix sont obligatoires.</div>";
+        $message = "<div class='error'>❌ Le nom et le prix sont obligatoires.</div>";
     }
 }
 ?>
@@ -40,9 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Exercice 2 : Ajouter un produit</title>
+    <title>Ajouter un produit</title>
     <style>
-        /* Un peu de style pour que ce soit lisible */
         body { font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; }
@@ -56,9 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
-    <a href="index.php">⬅️ Retour à la liste des produits</a>
+    <a href="index.php">⬅️ Retour à la liste</a>
 
-    <h1>Ajouter un nouveau produit</h1>
+    <h1>Ajouter un nouveau produit (Mode Objet)</h1>
 
     <?= $message ?>
 
@@ -94,7 +100,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <button type="submit">Enregistrer le produit</button>
-
     </form>
 
 </body>

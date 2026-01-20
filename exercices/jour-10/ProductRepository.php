@@ -1,6 +1,5 @@
 <?php
 
-// 1. On charge la définition de l'objet Product
 require_once 'Product.php';
 
 class ProductRepository
@@ -12,10 +11,6 @@ class ProductRepository
         $this->pdo = $pdo;
     }
 
-    /**
-     * 🪄 HYDRATATION
-     * Transforme un tableau SQL en Objet Product
-     */
     private function hydrate(array $data): Product
     {
         return new Product(
@@ -28,15 +23,13 @@ class ProductRepository
         );
     }
 
-    // --- LECTURE (READ) ---
+    //LECTURE (READ)
 
     public function find(int $id): Product|false
     {
         $stmt = $this->pdo->prepare("SELECT * FROM products WHERE id = :id");
         $stmt->execute(['id' => $id]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        // Si data est faux (pas trouvé), on renvoie false, sinon on hydrate
         return $data ? $this->hydrate($data) : false;
     }
 
@@ -45,6 +38,8 @@ class ProductRepository
         $stmt = $this->pdo->query("SELECT * FROM products");
         return array_map([$this, 'hydrate'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
+
+    //RECHERCHES AVANCÉES (Pour l'Exercice 3)
 
     public function findByCategory(int $categoryId): array
     {
@@ -59,16 +54,27 @@ class ProductRepository
         return array_map([$this, 'hydrate'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
+    
     public function search(string $term): array
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM products WHERE name LIKE :term OR description LIKE :term");
-        $stmt->execute(['term' => "%$term%"]);
+        $stmt = $this->pdo->prepare("SELECT * FROM products WHERE name LIKE :t1 OR description LIKE :t2");
+        
+        $wildcard = "%$term%";
+        
+        $stmt->execute([
+            't1' => $wildcard,
+            't2' => $wildcard
+        ]);
+        
         return array_map([$this, 'hydrate'], $stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
-    // --- ÉCRITURE (CREATE, UPDATE, DELETE) ---
+    // --- ÉCRITURE STRICTE (MODE OBJET) ---
 
-    public function create(string $name, string $description, float $price, int $stock, int $categoryId): void
+    
+    //CREATE (SAVE) : On reçoit un OBJET Product
+    
+    public function save(Product $product): void
     {
         $sql = "INSERT INTO products (name, description, price, stock, category_id) 
                 VALUES (:name, :description, :price, :stock, :cat_id)";
@@ -76,21 +82,20 @@ class ProductRepository
         $stmt = $this->pdo->prepare($sql);
         
         $stmt->execute([
-            'name'        => $name,
-            'description' => $description,
-            'price'       => $price,
-            'stock'       => $stock,
-            'cat_id'      => $categoryId
+            'name'        => $product->getName(),
+            'description' => $product->getDescription(),
+            'price'       => $product->getPrice(),
+            'stock'       => $product->getStock(),
+            'cat_id'      => $product->getCategoryId()
         ]);
         
-        echo "✅ Produit ajouté avec succès !<br>";
+        echo "✅ Produit sauvegardé !<br>";
     }
 
-    /**
-     * UPDATE : La version COMPLÈTE pour edit.php
-     * Elle met à jour le nom, la description, le prix, le stock et la catégorie.
-     */
-    public function update(int $id, string $name, string $description, float $price, int $stock, int $categoryId): void
+    
+     //UPDATE : On reçoit un OBJET Product
+     
+    public function update(Product $product): void
     {
         $sql = "UPDATE products 
                 SET name = :name, 
@@ -103,21 +108,18 @@ class ProductRepository
         $stmt = $this->pdo->prepare($sql);
         
         $stmt->execute([
-            'id'     => $id,
-            'name'   => $name,
-            'desc'   => $description,
-            'price'  => $price,
-            'stock'  => $stock,
-            'cat_id' => $categoryId
+            'id'     => $product->getId(),
+            'name'   => $product->getName(),
+            'desc'   => $product->getDescription(),
+            'price'  => $product->getPrice(),
+            'stock'  => $product->getStock(),
+            'cat_id' => $product->getCategoryId()
         ]);
-        
-        // On ne met pas d'echo ici, car edit.php gère son propre message de succès.
     }
 
     public function delete(int $id): void
     {
         $stmt = $this->pdo->prepare("DELETE FROM products WHERE id = :id");
         $stmt->execute(['id' => $id]);
-        // L'echo ici n'est pas grave, mais delete.php fait une redirection rapide donc on ne le verra pas.
     }
 }
