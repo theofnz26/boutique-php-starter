@@ -1,17 +1,17 @@
 <?php
 
 require_once 'ProductRepository.php';
+// On charge Product.php pour être sûr que PHP connaît la classe
+require_once 'Product.php';
 
 // 1. Configuration de la connexion
 $host = "localhost";
 $dbname = "boutique";
-$user = "dev";      // Ton utilisateur
-$pass = "dev";      // Ton mot de passe
+$user = "dev";
+$pass = "dev";
 
 try {
-    // Connexion à MySQL
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
-    // Activation des erreurs pour voir les problèmes SQL
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     echo "✅ Connexion réussie à la BDD (User: $user).<br><hr>";
 } catch (PDOException $e) {
@@ -21,21 +21,27 @@ try {
 // 2. Initialisation du Repository
 $repo = new ProductRepository($pdo);
 
-// ... (Après la connexion $pdo et le new ProductRepository) ...
-
-echo "<h2>🔄 Test du Cycle de Vie (CRUD Complet)</h2>";
+// ==========================================
+// 🔄 TEST DU CRUD (Cycle de vie)
+// ==========================================
+echo "<h2>🔄 Test du Cycle de Vie (CRUD Objet)</h2>";
 
 // 1. CREATE : On crée un produit temporaire
 echo "Step 1 : Création... ";
-$repo->create("Produit Fantôme", "Va disparaitre", 10.0, 5, "Vêtements");
+// ⚠️ ATTENTION : On met '1' pour l'ID catégorie (Vêtements), et non plus le texte
+$repo->create("Produit Fantôme", "Va disparaitre", 10.0, 5, 1);
 
-// 🪄 ASTUCE : On demande à PDO quel est l'ID du dernier truc créé
+// On récupère l'ID généré
 $lastId = $pdo->lastInsertId();
 echo "<strong>ID généré : $lastId</strong><br>";
 
 // 2. READ : On vérifie qu'il est là
 $p = $repo->find($lastId);
-echo "Step 2 : Vérification -> Nom actuel : " . $p['name'] . " (" . $p['price'] . "€)<br>";
+
+if ($p) {
+    // 👇 ICI LE CHANGEMENT MAJEUR : On utilise les méthodes de l'objet (->)
+    echo "Step 2 : Vérification -> Nom actuel : " . $p->getName() . " (" . $p->getPrice() . "€)<br>";
+}
 
 // 3. UPDATE : On le modifie
 echo "Step 3 : Modification... ";
@@ -43,7 +49,9 @@ $repo->update($lastId, "Fantôme MODIFIÉ", 999.99);
 
 // On revérifie
 $p = $repo->find($lastId);
-echo "-> Nouveau nom : " . $p['name'] . " (" . $p['price'] . "€)<br>";
+if ($p) {
+    echo "-> Nouveau nom : " . $p->getName() . " (" . $p->getPrice() . "€)<br>";
+}
 
 // 4. DELETE : On le supprime
 echo "Step 4 : Suppression... ";
@@ -59,9 +67,41 @@ if ($check === false) {
 
 echo "<hr>";
 
-// --- AFFICHER LE RESTE DU STOCK ---
-echo "<h3>📦 Stock Restant</h3>";
-$list = $repo->findAll();
-foreach($list as $item) {
-    echo "ID " . $item['id'] . " : " . $item['name'] . "<br>";
+// ==========================================
+// 🕵️ TESTS DES RECHERCHES AVANCÉES (EXO 3)
+// ==========================================
+echo "<h2>🕵️ Tests des Recherches (Mode Objet)</h2>";
+
+// TEST 1 : Par catégorie (ID 1 = Vêtements)
+echo "<h3>👕 Produits de la catégorie 1 (Vêtements)</h3>";
+$vetements = $repo->findByCategory(1);
+
+if (empty($vetements)) {
+    echo "Aucun vêtement trouvé.<br>";
+} else {
+    foreach ($vetements as $product) {
+        // On utilise les Getters de l'objet Product
+        echo "📦 " . $product->getName() . " (" . $product->getPrice() . " €)<br>";
+    }
 }
+
+// TEST 2 : Produits en stock
+echo "<h3>✅ Produits en stock (> 0)</h3>";
+$stock = $repo->findInStock();
+foreach ($stock as $product) {
+    echo "- " . $product->getName() . " (Stock: " . $product->getStock() . ")<br>";
+}
+
+// TEST 3 : Recherche texte
+echo "<h3>🔍 Recherche du mot 'Sport'</h3>";
+$results = $repo->search("Sport");
+
+if (empty($results)) {
+    echo "Aucun résultat pour 'Sport'.<br>";
+} else {
+    foreach ($results as $product) {
+        echo "🔎 Trouvé : " . $product->getName() . " (" . $product->getDescription() . ")<br>";
+    }
+}
+
+echo "<br><br><br>"; // Juste pour faire de la place en bas de page
