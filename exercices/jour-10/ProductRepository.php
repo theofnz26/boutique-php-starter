@@ -10,30 +10,74 @@ class ProductRepository
     }
 
     /**
-     * Récupérer un produit précis par son ID
-     * (Ex: Donne-moi le T-shirt Blanc, ID 1)
+     * READ: Récupérer un produit précis par son ID
      */
     public function find(int $id): array|false
     {
-        // 1. On prépare la requête pour éviter les failles de sécurité
         $stmt = $this->pdo->prepare("SELECT * FROM products WHERE id = :id");
-        
-        // 2. On remplace :id par la vraie valeur
         $stmt->execute(['id' => $id]);
-
-        // 3. On récupère le résultat
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Récupérer TOUTE la liste
+     * READ: Récupérer TOUTE la liste
      */
     public function findAll(): array
     {
-        // Pas de variable à insérer, donc query() suffit
         $stmt = $this->pdo->query("SELECT * FROM products");
-        
-        // fetchAll récupère toutes les lignes d'un coup
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * CREATE: Ajouter un nouveau produit
+     */
+    public function create(string $name, string $description, float $price, int $stock, string $category): void
+    {
+        $sql = "INSERT INTO products (name, description, price, stock, category) 
+                VALUES (:name, :description, :price, :stock, :category)";
+        
+        $stmt = $this->pdo->prepare($sql);
+        
+        $stmt->execute([
+            'name'        => $name,
+            'description' => $description,
+            'price'       => $price,
+            'stock'       => $stock,
+            'category'    => $category
+        ]);
+        
+        echo "✅ Produit ajouté avec succès !<br>";
+    }
+
+    /**
+     * UPDATE: Modifier un produit existant
+     * (Ici on modifie juste le nom et le prix pour l'exemple)
+     */
+    public function update(int $id, string $name, float $price): void
+    {
+        $sql = "UPDATE products SET name = :name, price = :price WHERE id = :id";
+        
+        $stmt = $this->pdo->prepare($sql);
+        
+        $stmt->execute([
+            'id'    => $id,
+            'name'  => $name,
+            'price' => $price
+        ]);
+        
+        echo "✅ Produit $id modifié avec succès !<br>";
+    }
+
+    /**
+     * DELETE: Supprimer un produit
+     */
+    public function delete(int $id): void
+    {
+        $sql = "DELETE FROM products WHERE id = :id";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        
+        echo "🗑️ Produit $id supprimé de la base.<br>";
     }
 }

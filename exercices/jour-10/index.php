@@ -21,33 +21,47 @@ try {
 // 2. Initialisation du Repository
 $repo = new ProductRepository($pdo);
 
-//TEST 1 : Afficher tout le monde (findAll)
-echo "<h3>📦 Liste de tous les produits</h3>";
-$produits = $repo->findAll();
+// ... (Après la connexion $pdo et le new ProductRepository) ...
 
-if (empty($produits)) {
-    echo "Aucun produit trouvé.";
+echo "<h2>🔄 Test du Cycle de Vie (CRUD Complet)</h2>";
+
+// 1. CREATE : On crée un produit temporaire
+echo "Step 1 : Création... ";
+$repo->create("Produit Fantôme", "Va disparaitre", 10.0, 5, "Vêtements");
+
+// 🪄 ASTUCE : On demande à PDO quel est l'ID du dernier truc créé
+$lastId = $pdo->lastInsertId();
+echo "<strong>ID généré : $lastId</strong><br>";
+
+// 2. READ : On vérifie qu'il est là
+$p = $repo->find($lastId);
+echo "Step 2 : Vérification -> Nom actuel : " . $p['name'] . " (" . $p['price'] . "€)<br>";
+
+// 3. UPDATE : On le modifie
+echo "Step 3 : Modification... ";
+$repo->update($lastId, "Fantôme MODIFIÉ", 999.99);
+
+// On revérifie
+$p = $repo->find($lastId);
+echo "-> Nouveau nom : " . $p['name'] . " (" . $p['price'] . "€)<br>";
+
+// 4. DELETE : On le supprime
+echo "Step 4 : Suppression... ";
+$repo->delete($lastId);
+
+// 5. READ FINAL : On vérifie qu'il n'est plus là
+$check = $repo->find($lastId);
+if ($check === false) {
+    echo "✅ Preuve : Le produit n'existe plus !";
 } else {
-    echo "<ul>";
-    foreach ($produits as $p) {
-        
-        echo "<li>";
-        echo "<strong>" . htmlspecialchars($p['name']) . "</strong> ";
-        echo "(" . $p['price'] . " €)";
-        echo "</li>";
-    }
-    echo "</ul>";
+    echo "❌ Aïe, il est encore là.";
 }
 
-// --- TEST 2 : Afficher juste le T-shirt (ID 1) ---
-echo "<h3>🔍 Recherche du produit n°1 (find)</h3>";
-$produit = $repo->find(1);
+echo "<hr>";
 
-if ($produit) {
-    
-    echo "Nom : <strong>" . htmlspecialchars($produit['name']) . "</strong><br>";
-    echo "Description : " . htmlspecialchars($produit['description']) . "<br>";
-    echo "Prix : " . $produit['price'] . " €";
-} else {
-    echo "Produit introuvable (Vérifie l'ID).";
+// --- AFFICHER LE RESTE DU STOCK ---
+echo "<h3>📦 Stock Restant</h3>";
+$list = $repo->findAll();
+foreach($list as $item) {
+    echo "ID " . $item['id'] . " : " . $item['name'] . "<br>";
 }
