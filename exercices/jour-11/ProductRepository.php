@@ -46,4 +46,63 @@ class ProductRepository
         // On utilise array_map pour transformer chaque ligne en Objet
         return array_map([$this, 'hydrate'], $lignes);
     }
+
+    // --- AJOUTS EXERCICE 2 (C.U.D) ---
+
+    /**
+     * CREATE : Sauvegarder un nouveau produit
+     */
+    public function save(Product $product): void
+    {
+        $sql = "INSERT INTO products (name, description, price, stock, category_id) 
+                VALUES (:name, :desc, :price, :stock, :cat_id)";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'name'  => $product->getName(),
+            'desc'  => $product->getDescription(),
+            'price' => $product->getPrice(),
+            'stock' => $product->getStock(),
+            'cat_id'=> $product->getCategoryId()
+        ]);
+        
+        echo "✅ Produit \"" . $product->getName() . "\" créé en base de données !<br>";
+    }
+
+    /**
+     * UPDATE : Modifier un produit existant
+     */
+    public function update(Product $product): void
+    {
+        $sql = "UPDATE products 
+                SET name = :name, 
+                    description = :desc, 
+                    price = :price, 
+                    stock = :stock, 
+                    category_id = :cat_id 
+                WHERE id = :id";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'id'    => $product->getId(),
+            'name'  => $product->getName(),
+            'desc'  => $product->getDescription(),
+            'price' => $product->getPrice(),
+            'stock' => $product->getStock(),
+            'cat_id'=> $product->getCategoryId()
+        ]);
+        
+        echo "🔄 Produit ID " . $product->getId() . " mis à jour !<br>";
+    }
+
+    /**
+     * DELETE : Supprimer par l'ID
+     */
+    public function delete(int $id): void
+    {
+        $stmt = $this->pdo->prepare("DELETE FROM products WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        
+        echo "🗑️ Produit ID $id supprimé.<br>";
+    }
 }
