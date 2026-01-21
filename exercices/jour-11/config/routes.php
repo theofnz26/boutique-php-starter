@@ -1,9 +1,11 @@
 <?php
-// On instancie le routeur
 $router = new Router();
 
-// --- LISTE DES ROUTES ---
 $router->get('/', [HomeController::class, 'index']);
+$router->get('/produits', [ProductController::class, 'index']);
 
-// On retourne l'objet router pour l'utiliser dans index.php
+// AVANT : $router->get('/produit', ...);
+// MAINTENANT : On utilise le paramètre dynamique {id}
+$router->get('/produit/{id}', [ProductController::class, 'show']);
+
 return $router;
