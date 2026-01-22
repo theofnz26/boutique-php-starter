@@ -1,11 +1,16 @@
 <?php
-// public/index.php
+
 session_start();
 
-// --- AUTOLOADER ---
-// Charge automatiquement les classes (Router, Controller, etc.)
+// ON UTILISE L'AUTOLOADER DE COMPOSER !
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$router = require_once __DIR__ . '/../config/routes.php';
+$router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);
+header('Content-Type: text/html; charset=utf-8');
+
+// 2. Autoloader
 spl_autoload_register(function ($class) {
-    // Liste des dossiers où chercher les classes
     $folders = [
         '../app/',
         '../app/Controller/',
@@ -22,14 +27,7 @@ spl_autoload_register(function ($class) {
     }
 });
 
-// --- DEBUG ---
-// Affiche l'URL demandée pour vérifier que ça marche
-echo "<div style='background:#eee; padding:5px; border-bottom:1px solid #ccc'>";
-echo "🔍 <strong>DEBUG:</strong> URI=" . htmlspecialchars($_SERVER['REQUEST_URI']);
-echo " | Method=" . $_SERVER['REQUEST_METHOD'];
-echo "</div>";
-
-// --- ROUTAGE ---
-// On charge les routes et on lance l'application
+// 3. Routage
+// On ne fait AUCUN echo ici. On laisse le routeur décider.
 $router = require_once __DIR__ . '/../config/routes.php';
 $router->dispatch($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD']);

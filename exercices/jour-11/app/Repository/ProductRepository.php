@@ -1,30 +1,54 @@
 <?php
+
+namespace App\Repository;
+
+use PDO;
+
 class ProductRepository
 {
-    public function __construct(private PDO $pdo) {}
-
-    private function hydrate(array $data): Product
+    public function __construct(private PDO $pdo)
     {
-        return new Product(
-            id: (int)$data['id'],
-            name: $data['name'],
-            description: $data['description'] ?? '',
-            price: (float)$data['price'],
-            stock: (int)$data['stock']
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function hydrate(array $data): \App\Entity\Product
+    {
+        return new \App\Entity\Product(
+            (int)$data['id'],
+            $data['name'],
+            $data['description'],
+            (float)$data['price'],
+            (int)$data['stock']
         );
     }
 
-    public function findAll(): array
+    public function find(int $id): ?\App\Entity\Product
     {
-        $stmt = $this->pdo->query("SELECT * FROM products");
-        return array_map([$this, 'hydrate'], $stmt->fetchAll(PDO::FETCH_ASSOC));
-    }
-    
-    public function find(int $id): ?Product
-    {
-        $stmt = $this->pdo->prepare("SELECT * FROM products WHERE id = :id");
+        $stmt = $this->pdo->prepare('SELECT * FROM products WHERE id = :id');
         $stmt->execute(['id' => $id]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $data ? $this->hydrate($data) : null;
+
+        if (!$data) {
+            return null;
+        }
+
+        return $this->hydrate($data);
+    }
+
+    /**
+     * @return array<\App\Entity\Product>
+     */
+    public function findAll(): array
+    {
+        $stmt = $this->pdo->query('SELECT * FROM products');
+        $products = [];
+
+        while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $products[] = $this->hydrate($data);
+        }
+
+        return $products;
     }
 }

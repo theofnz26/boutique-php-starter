@@ -1,0 +1,22 @@
+{
+    "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "laravel/pint": "^1.27",
+        "rector/rector": "^2.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "scripts": {
+        "lint": "vendor/bin/pint --test",
+        "fix": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse",
+        "refactor": "vendor/bin/rector --dry-run",
+        "quality": [
+            "@fix",
+            "@analyse"
+        ]
+    }
+}
